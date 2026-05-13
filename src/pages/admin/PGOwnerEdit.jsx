@@ -29,7 +29,7 @@ export default function PGOwnerEdit() {
             toast.success('Owner updated')
             navigate('/admin/pg-owners')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update owner')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update owner')
         } finally {
             setSaving(false)
         }

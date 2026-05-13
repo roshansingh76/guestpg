@@ -1,21 +1,19 @@
-import api from './api'
-
-const unwrap = (res) => (res.data && res.data.data !== undefined) ? res.data.data : res.data
+import api, { unwrapResponse } from './api'
 
 export const listGuests = (pgId) =>
-    api.get(`/pgs/${pgId}/guests`).then(unwrap)
+    api.get(`/pgs/${pgId}/tenants`).then(unwrapResponse)
 
 export const getGuest = (pgId, id) =>
-    api.get(`/pgs/${pgId}/guests/${id}`).then(unwrap)
+    api.get(`/pgs/${pgId}/tenants/${id}`).then(unwrapResponse)
 
 export const createGuest = (pgId, data) =>
-    api.post(`/pgs/${pgId}/guests`, data).then(unwrap)
+    api.post(`/pgs/${pgId}/tenants`, data).then(unwrapResponse)
 
 export const updateGuest = (pgId, id, data) =>
-    api.put(`/pgs/${pgId}/guests/${id}`, data).then(unwrap)
+    api.put(`/pgs/${pgId}/tenants/${id}`, data).then(unwrapResponse)
 
 export const checkoutGuest = (pgId, id, data) =>
-    api.patch(`/pgs/${pgId}/guests/${id}/checkout`, data).then(unwrap)
+    api.patch(`/pgs/${pgId}/tenants/${id}/checkout`, data).then(unwrapResponse)
 
 export const deleteGuest = (pgId, id) =>
-    api.delete(`/pgs/${pgId}/guests/${id}`).then(unwrap)
+    api.delete(`/pgs/${pgId}/tenants/${id}`).then(unwrapResponse)

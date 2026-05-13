@@ -35,7 +35,7 @@ export default function PaymentsList() {
             toast.success('Bills generated')
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to generate bills')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to generate bills')
         }
     }
 
@@ -49,7 +49,7 @@ export default function PaymentsList() {
             setPayment({ amount: '', mode: 'cash', referenceNo: '', note: '' })
             load()
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to record payment')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to record payment')
         } finally {
             setSaving(false)
         }

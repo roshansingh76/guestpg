@@ -7,9 +7,9 @@ export const fetchUsers = createAsyncThunk(
         try {
             const url = role ? `/users?page=${page}&limit=${limit}&role=${role}` : `/users?page=${page}&limit=${limit}`
             const response = await api.get(url)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch users')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch users')
         }
     }
 )
@@ -19,9 +19,9 @@ export const createUser = createAsyncThunk(
     async (userData, { rejectWithValue }) => {
         try {
             const response = await api.post('/users', userData)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to create user')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to create user')
         }
     }
 )
@@ -31,9 +31,9 @@ export const updateUser = createAsyncThunk(
     async ({ id, data }, { rejectWithValue }) => {
         try {
             const response = await api.put(`/users/${id}`, data)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to update user')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update user')
         }
     }
 )

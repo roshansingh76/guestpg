@@ -41,7 +41,7 @@ export default function ExpensesList() {
             setForm({ category: 'other', amount: '', description: '' })
             toast.success('Expense added')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to add expense')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to add expense')
         } finally {
             setSaving(false)
         }

@@ -6,9 +6,9 @@ export const fetchPGs = createAsyncThunk(
     async ({ page = 1, limit = 10 }, { rejectWithValue }) => {
         try {
             const response = await api.get(`/pgs?page=${page}&limit=${limit}`)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch PGs')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch PGs')
         }
     }
 )
@@ -18,9 +18,9 @@ export const fetchPGById = createAsyncThunk(
     async (id, { rejectWithValue }) => {
         try {
             const response = await api.get(`/pgs/${id}`)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to fetch PG')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to fetch PG')
         }
     }
 )
@@ -30,9 +30,9 @@ export const createPG = createAsyncThunk(
     async (pgData, { rejectWithValue }) => {
         try {
             const response = await api.post('/pgs', pgData)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to create PG')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to create PG')
         }
     }
 )
@@ -42,9 +42,9 @@ export const updatePG = createAsyncThunk(
     async ({ id, data }, { rejectWithValue }) => {
         try {
             const response = await api.put(`/pgs/${id}`, data)
-            return response.data
+            return response.data.data
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to update PG')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to update PG')
         }
     }
 )
@@ -56,7 +56,7 @@ export const deletePG = createAsyncThunk(
             await api.delete(`/pgs/${id}`)
             return id
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to delete PG')
+            return rejectWithValue(error.response?.data?.error?.message || error.response?.data?.message || 'Failed to delete PG')
         }
     }
 )

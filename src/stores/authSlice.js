@@ -13,7 +13,7 @@ export const loginUser = createAsyncThunk(
             return { token, user }
         } catch (err) {
             return rejectWithValue(
-                err.response?.data?.message || 'Invalid email or password'
+                err.response?.data?.error?.message || err.response?.data?.message || 'Invalid email or password'
             )
         }
     }

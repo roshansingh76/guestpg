@@ -10,7 +10,8 @@ import { getGuest, updateGuest } from '../../services/guestService'
 export default function GuestEdit() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const pgId = useSelector((s) => s.auth.user?.pgId)
+    const user = useSelector((s) => s.auth.user)
+    const pgId = user?.pgId || localStorage.getItem('selectedPgId')
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const { register, handleSubmit, reset, formState: { errors } } = useForm()
@@ -27,10 +28,10 @@ export default function GuestEdit() {
         setSaving(true)
         try {
             await updateGuest(pgId, id, values)
-            toast.success('Guest updated')
-            navigate('/owner/guests')
+            toast.success('Tenant updated')
+            navigate('/owner/tenants')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update guest')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update tenant')
         } finally {
             setSaving(false)
         }
@@ -42,10 +43,10 @@ export default function GuestEdit() {
         <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <p className="text-sm text-gray-500 uppercase tracking-wider">Edit guest</p>
-                    <h1 className="text-3xl font-semibold text-gray-900">Guest profile</h1>
+                    <p className="text-sm text-gray-500 uppercase tracking-wider">Edit tenant</p>
+                    <h1 className="text-3xl font-semibold text-gray-900">Tenant profile</h1>
                 </div>
-                <Link to="/owner/guests" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                <Link to="/owner/tenants" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
                     <ArrowLeft size={18} /> Back
                 </Link>
             </div>

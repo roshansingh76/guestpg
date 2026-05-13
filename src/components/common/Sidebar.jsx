@@ -6,18 +6,20 @@ export default function Sidebar({ open, onClose }) {
     const { user } = useSelector((state) => state.auth)
     const location = useLocation()
 
-    const isSuperAdmin = user?.role === 'super_admin'
+    const isSuperAdmin = user?.role === 'super_admin' || user?.role === 'admin'
 
     const adminMenu = [
         { icon: Home, label: 'Dashboard', path: '/admin/dashboard' },
         { icon: Users, label: 'PG Owners', path: '/admin/pg-owners' },
         { icon: Settings, label: 'PGs', path: '/admin/pgs' },
+        { icon: Users, label: 'Tenants', path: '/owner/tenants' },
+        { icon: Settings, label: 'Rooms', path: '/owner/rooms' },
         { icon: BarChart3, label: 'Reports', path: '/admin/reports' },
     ]
 
     const ownerMenu = [
         { icon: Home, label: 'Dashboard', path: '/owner/dashboard' },
-        { icon: Users, label: 'Guests', path: '/owner/guests' },
+        { icon: Users, label: 'Tenants', path: '/owner/tenants' },
         { icon: Settings, label: 'Rooms', path: '/owner/rooms' },
         { icon: Settings, label: 'Beds', path: '/owner/beds' },
         { icon: Settings, label: 'Allocations', path: '/owner/allocations' },

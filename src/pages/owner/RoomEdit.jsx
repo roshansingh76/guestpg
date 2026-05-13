@@ -10,7 +10,8 @@ import { getRoom, updateRoom } from '../../services/pgService'
 export default function RoomEdit() {
     const { id } = useParams()
     const navigate = useNavigate()
-    const pgId = useSelector((s) => s.auth.user?.pgId)
+    const user = useSelector((s) => s.auth.user)
+    const pgId = user?.pgId || localStorage.getItem('selectedPgId')
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const { register, handleSubmit, reset, formState: { errors } } = useForm()
@@ -30,7 +31,7 @@ export default function RoomEdit() {
             toast.success('Room updated')
             navigate('/owner/rooms')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update room')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update room')
         } finally {
             setSaving(false)
         }

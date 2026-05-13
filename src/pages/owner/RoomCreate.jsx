@@ -1,28 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { ArrowLeft } from 'lucide-react'
 import Card from '../../components/common/Card'
-import { createRoom } from '../../services/pgService'
+import { createRoom, listPGs } from '../../services/pgService'
 
 export default function RoomCreate() {
     const navigate = useNavigate()
-    const pgId = useSelector((s) => s.auth.user?.pgId)
+    const user = useSelector((s) => s.auth.user)
+    const isOwner = user?.role === 'pg_owner' || user?.role === 'pg_staff'
+    const [pgs, setPgs] = useState([])
+    const [selectedPgId, setSelectedPgId] = useState(user?.pgId ? String(user.pgId) : '')
     const [saving, setSaving] = useState(false)
     const { register, handleSubmit, formState: { errors } } = useForm({
         defaultValues: { roomNumber: '', roomType: '', acType: 'NonAC', totalBeds: 1, availableBeds: 1, pricePerBed: 0 },
     })
 
+    useEffect(() => {
+        const loadPGs = async () => {
+            try {
+                const pgList = await listPGs()
+                setPgs(pgList)
+                if (!selectedPgId && pgList.length > 0) {
+                    setSelectedPgId(String(pgList[0].id))
+                }
+            } catch (error) {
+                console.error('Failed to load PGs', error)
+                toast.error('Failed to load PGs')
+            }
+        }
+        loadPGs()
+    }, [])
+
     const onSubmit = async (values) => {
+        if (!selectedPgId) {
+            toast.error('Please select a PG')
+            return
+        }
         setSaving(true)
         try {
-            await createRoom(pgId, { ...values, totalBeds: Number(values.totalBeds), availableBeds: Number(values.availableBeds), pricePerBed: Number(values.pricePerBed) })
+            await createRoom(selectedPgId, { ...values, totalBeds: Number(values.totalBeds), availableBeds: Number(values.availableBeds), pricePerBed: Number(values.pricePerBed) })
             toast.success('Room created')
             navigate('/owner/rooms')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create room')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to create room')
         } finally {
             setSaving(false)
         }
@@ -40,6 +63,21 @@ export default function RoomCreate() {
 
             <Card>
                 <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 md:grid-cols-2">
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select PG</label>
+                        <select
+                            value={selectedPgId}
+                            onChange={(e) => setSelectedPgId(e.target.value)}
+                            disabled={isOwner}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <option value="">-- Select a PG --</option>
+                            {pgs.map((pg) => (
+                                <option key={pg.id} value={String(pg.id)}>{pg.pgName}</option>
+                            ))}
+                        </select>
+                        {isOwner && <p className="mt-1 text-sm text-gray-500">You can only create rooms for your assigned PG</p>}
+                    </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Room number</label>
                         <input {...register('roomNumber', { required: 'Required' })} className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500" />

@@ -1,10 +1,10 @@
-import api from './api'
+import api, { unwrapResponse } from './api'
 
 export const login = (email, password) =>
-    api.post('/auth/login', { email, password }).then((res) => res.data)
+    api.post('/auth/login', { email, password }).then(unwrapResponse)
 
 export const getProfile = () =>
-    api.get('/auth/profile').then((res) => res.data)
+    api.get('/auth/profile').then(unwrapResponse)
 
 export const changePassword = (data) =>
-    api.put('/auth/change-password', data).then((res) => res.data)
+    api.put('/auth/change-password', data).then(unwrapResponse)

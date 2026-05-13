@@ -64,7 +64,7 @@ export default function PGEdit() {
             }
             navigate('/admin/pgs')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to save PG')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to save PG')
         } finally {
             setSaving(false)
         }

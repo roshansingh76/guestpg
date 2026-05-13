@@ -59,7 +59,7 @@ export default function Login() {
                                     type="email"
                                     {...register('email', { required: 'Email is required' })}
                                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
-                                    placeholder="admin@pgsystem.com"
+                                    placeholder="admin@gmail.com"
                                     disabled={isLoading}
                                 />
                             </div>
@@ -104,7 +104,7 @@ export default function Login() {
                     <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                         <p className="text-xs font-semibold text-blue-900 mb-2">Demo Credentials</p>
                         <div className="text-xs text-blue-800 space-y-1">
-                            <p><span className="font-medium">Super Admin:</span> admin@pgsystem.com / password</p>
+                            <p><span className="font-medium">Super Admin:</span> admin@gmail.com / 123456</p>
                             <p><span className="font-medium">PG Owner:</span> owner@pgsystem.com / password</p>
                         </div>
                     </div>

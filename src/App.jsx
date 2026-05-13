@@ -50,7 +50,7 @@ function App() {
                     <Route
                         path="/admin/*"
                         element={
-                            <ProtectedRoute role="super_admin">
+                            <ProtectedRoute role={['super_admin', 'admin']}>
                                 <Layout>
                                     <Routes>
                                         <Route path="dashboard" element={<Dashboard />} />
@@ -72,13 +72,16 @@ function App() {
                     <Route
                         path="/owner/*"
                         element={
-                            <ProtectedRoute role="pg_owner">
+                            <ProtectedRoute role={['pg_owner', 'super_admin']}>
                                 <Layout>
                                     <Routes>
                                         <Route path="dashboard" element={<OwnerDashboard />} />
                                         <Route path="guests" element={<GuestsList />} />
                                         <Route path="guests/new" element={<GuestCreate />} />
                                         <Route path="guests/:id/edit" element={<GuestEdit />} />
+                                        <Route path="tenants" element={<GuestsList />} />
+                                        <Route path="tenants/new" element={<GuestCreate />} />
+                                        <Route path="tenants/:id/edit" element={<GuestEdit />} />
                                         <Route path="rooms" element={<RoomsList />} />
                                         <Route path="rooms/new" element={<RoomCreate />} />
                                         <Route path="rooms/:id/edit" element={<RoomEdit />} />

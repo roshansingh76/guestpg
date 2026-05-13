@@ -36,7 +36,7 @@ export default function BedEdit() {
             toast.success('Bed updated')
             navigate('/owner/beds')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update bed')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update bed')
         } finally {
             setSaving(false)
         }

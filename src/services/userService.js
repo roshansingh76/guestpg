@@ -1,27 +1,25 @@
-import api from './api'
-
-const unwrap = (res) => (res.data && res.data.data !== undefined) ? res.data.data : res.data
+import api, { unwrapResponse } from './api'
 
 export const listUsers = (params) =>
-    api.get('/users', { params }).then(unwrap)
+    api.get('/users', { params }).then(unwrapResponse)
 
 export const getUser = (id) =>
-    api.get(`/users/${id}`).then(unwrap)
+    api.get(`/users/${id}`).then(unwrapResponse)
 
 export const getUsersByPG = (pgId) =>
-    api.get(`/users/pg/${pgId}`).then(unwrap)
+    api.get(`/users/pg/${pgId}`).then(unwrapResponse)
 
 export const getAvailablePGs = () =>
-    api.get('/users/pgs/available').then(unwrap)
+    api.get('/users/pgs/available').then(unwrapResponse)
 
 export const createUser = (data) =>
-    api.post('/users', data).then(unwrap)
+    api.post('/users', data).then(unwrapResponse)
 
 export const updateUser = (id, data) =>
-    api.put(`/users/${id}`, data).then(unwrap)
+    api.put(`/users/${id}`, data).then(unwrapResponse)
 
 export const deleteUser = (id) =>
-    api.delete(`/users/${id}`).then(unwrap)
+    api.delete(`/users/${id}`).then(unwrapResponse)
 
 export const changeUserStatus = (id, status) =>
-    api.patch(`/users/${id}/status`, { status }).then(unwrap)
+    api.patch(`/users/${id}/status`, { status }).then(unwrapResponse)

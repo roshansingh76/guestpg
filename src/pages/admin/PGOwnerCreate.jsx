@@ -25,7 +25,7 @@ export default function PGOwnerCreate() {
             toast.success('Owner created')
             navigate('/admin/pg-owners')
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create owner')
+            toast.error(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to create owner')
         } finally {
             setSaving(false)
         }

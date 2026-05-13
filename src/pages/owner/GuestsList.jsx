@@ -6,22 +6,46 @@ import toast from 'react-hot-toast'
 import Card from '../../components/common/Card'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { deleteGuest, listGuests } from '../../services/guestService'
+import { listPGs } from '../../services/pgService'
 
 export default function GuestsList() {
     const navigate = useNavigate()
-    const pgId = useSelector((s) => s.auth.user?.pgId)
+    const user = useSelector((s) => s.auth.user)
+    const isOwner = user?.role === 'pg_owner' || user?.role === 'pg_staff'
+    const [pgs, setPgs] = useState([])
+    const [selectedPgId, setSelectedPgId] = useState(user?.pgId ? String(user.pgId) : '')
     const [list, setList] = useState([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [confirm, setConfirm] = useState({ open: false, id: null, name: '' })
 
     useEffect(() => {
-        if (!pgId) return
-        listGuests(pgId)
+        const loadPGs = async () => {
+            try {
+                console.log('Loading PGs...')
+                const pgList = await listPGs()
+                console.log('PGs loaded:', pgList)
+                setPgs(pgList)
+                if (!selectedPgId && pgList.length > 0) {
+                    setSelectedPgId(String(pgList[0].id))
+                }
+            } catch (error) {
+                console.error('Failed to load PGs', error)
+                toast.error('Failed to load PGs')
+            }
+        }
+        loadPGs()
+    }, [])
+
+    useEffect(() => {
+        if (!selectedPgId) return
+        setLoading(true)
+        localStorage.setItem('selectedPgId', selectedPgId)
+        listGuests(selectedPgId)
             .then(setList)
             .catch(() => toast.error('Failed to load guests'))
             .finally(() => setLoading(false))
-    }, [pgId])
+    }, [selectedPgId])
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase()
@@ -34,7 +58,7 @@ export default function GuestsList() {
 
     const handleDelete = async () => {
         try {
-            await deleteGuest(pgId, confirm.id)
+            await deleteGuest(selectedPgId, confirm.id)
             setList((prev) => prev.filter((g) => g.id !== confirm.id))
             toast.success('Guest deleted')
         } catch {
@@ -48,16 +72,30 @@ export default function GuestsList() {
         <div className="space-y-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <p className="text-sm text-gray-500 uppercase tracking-wider">Guest management</p>
-                    <h1 className="text-3xl font-semibold text-gray-900">Guests</h1>
+                    <p className="text-sm text-gray-500 uppercase tracking-wider">Tenant management</p>
+                    <h1 className="text-3xl font-semibold text-gray-900">Tenants</h1>
                 </div>
-                <button onClick={() => navigate('/owner/guests/new')} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 transition">
-                    <Plus size={18} /> Add Guest
+                <button onClick={() => navigate('/owner/tenants/new', { state: { selectedPgId } })} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-white font-semibold shadow-sm hover:bg-blue-700 transition">
+                    <Plus size={18} /> Add Tenant
                 </button>
             </div>
 
             <Card>
-                <div className="mb-6">
+                <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="relative text-gray-500 w-full md:w-80">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select PG</label>
+                        <select
+                            value={selectedPgId}
+                            onChange={(e) => setSelectedPgId(e.target.value)}
+                            disabled={isOwner}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <option value="">-- Select a PG --</option>
+                            {pgs.map((pg) => (
+                                <option key={pg.id} value={String(pg.id)}>{pg.pgName}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="relative text-gray-500 w-full md:w-80">
                         <Search className="absolute left-3 top-3.5" size={18} />
                         <input
@@ -86,24 +124,24 @@ export default function GuestsList() {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filtered.length === 0 && (
-                                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No guests found</td></tr>
+                                    <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">No tenants found</td></tr>
                                 )}
-                                {filtered.map((guest) => (
-                                    <tr key={guest.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-4 py-4 font-medium text-gray-900">{guest.name}</td>
-                                        <td className="px-4 py-4">{guest.phone}</td>
-                                        <td className="px-4 py-4">{guest.aadhar}</td>
-                                        <td className="px-4 py-4">{guest.moveInDate?.slice(0, 10)}</td>
+                                {filtered.map((tenant) => (
+                                    <tr key={tenant.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-4 py-4 font-medium text-gray-900">{tenant.name}</td>
+                                        <td className="px-4 py-4">{tenant.phone}</td>
+                                        <td className="px-4 py-4">{tenant.aadhar}</td>
+                                        <td className="px-4 py-4">{tenant.moveInDate?.slice(0, 10)}</td>
                                         <td className="px-4 py-4">
-                                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${guest.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {guest.status}
+                                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tenant.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {tenant.status}
                                             </span>
                                         </td>
                                         <td className="px-4 py-4 flex flex-wrap items-center gap-2">
-                                            <button onClick={() => navigate(`/owner/guests/${guest.id}/edit`)} className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-blue-700 text-sm hover:bg-blue-100">
+                                            <button onClick={() => navigate(`/owner/tenants/${tenant.id}/edit`)} className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-2 text-blue-700 text-sm hover:bg-blue-100">
                                                 <Pencil size={14} /> Edit
                                             </button>
-                                            <button onClick={() => confirmDelete(guest)} className="inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 py-2 text-red-700 text-sm hover:bg-red-100">
+                                            <button onClick={() => confirmDelete(tenant)} className="inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 py-2 text-red-700 text-sm hover:bg-red-100">
                                                 <Trash2 size={14} /> Delete
                                             </button>
                                         </td>
@@ -117,9 +155,9 @@ export default function GuestsList() {
 
             <ConfirmDialog
                 open={confirm.open}
-                title="Delete guest?"
-                description={`This will permanently remove ${confirm.name || 'this guest'}.`}
-                confirmText="Delete guest"
+                title="Delete tenant?"
+                description={`This will permanently remove ${confirm.name || 'this tenant'}.`}
+                confirmText="Delete tenant"
                 onCancel={() => setConfirm({ open: false, id: null, name: '' })}
                 onConfirm={handleDelete}
             />

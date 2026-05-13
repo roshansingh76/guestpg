@@ -5,23 +5,44 @@ import { Search, Pencil, Trash2, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Card from '../../components/common/Card'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
-import { listRooms, deleteRoom } from '../../services/pgService'
+import { listRooms, deleteRoom, listPGs } from '../../services/pgService'
 
 export default function RoomsList() {
     const navigate = useNavigate()
-    const pgId = useSelector((s) => s.auth.user?.pgId)
+    const user = useSelector((s) => s.auth.user)
+    const isOwner = user?.role === 'pg_owner' || user?.role === 'pg_staff'
+    const [pgs, setPgs] = useState([])
+    const [selectedPgId, setSelectedPgId] = useState(user?.pgId ? String(user.pgId) : '')
     const [list, setList] = useState([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [confirm, setConfirm] = useState({ open: false, id: null, label: '' })
 
     useEffect(() => {
-        if (!pgId) return
-        listRooms(pgId)
+        const loadPGs = async () => {
+            try {
+                const pgList = await listPGs()
+                setPgs(pgList)
+                if (!selectedPgId && pgList.length > 0) {
+                    setSelectedPgId(String(pgList[0].id))
+                }
+            } catch (error) {
+                console.error('Failed to load PGs', error)
+                toast.error('Failed to load PGs')
+            }
+        }
+        loadPGs()
+    }, [])
+
+    useEffect(() => {
+        if (!selectedPgId) return
+        setLoading(true)
+        localStorage.setItem('selectedPgId', selectedPgId)
+        listRooms(selectedPgId)
             .then(setList)
             .catch(() => toast.error('Failed to load rooms'))
             .finally(() => setLoading(false))
-    }, [pgId])
+    }, [selectedPgId])
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase()
@@ -30,7 +51,7 @@ export default function RoomsList() {
 
     const handleDelete = async () => {
         try {
-            await deleteRoom(pgId, confirm.id)
+            await deleteRoom(selectedPgId, confirm.id)
             setList((prev) => prev.filter((r) => r.id !== confirm.id))
             toast.success('Room deleted')
         } catch {
@@ -53,7 +74,21 @@ export default function RoomsList() {
             </div>
 
             <Card>
-                <div className="mb-6">
+                <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="relative text-gray-500 w-full md:w-80">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select PG</label>
+                        <select
+                            value={selectedPgId}
+                            onChange={(e) => setSelectedPgId(e.target.value)}
+                            disabled={isOwner}
+                            className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                            <option value="">-- Select a PG --</option>
+                            {pgs.map((pg) => (
+                                <option key={pg.id} value={String(pg.id)}>{pg.pgName}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="relative text-gray-500 w-full md:w-80">
                         <Search className="absolute left-3 top-3.5" size={18} />
                         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search rooms"
@@ -66,7 +101,7 @@ export default function RoomsList() {
                         <table className="min-w-full text-left text-sm text-gray-600">
                             <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
                                 <tr>
-                                    <th className="px-4 py-4">Room</th>
+                                    <th className="px-4 py-4">Room No</th>
                                     <th className="px-4 py-4">Type</th>
                                     <th className="px-4 py-4">AC</th>
                                     <th className="px-4 py-4">Total beds</th>
